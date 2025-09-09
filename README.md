@@ -15,7 +15,8 @@
 * [环境下载链接](https://pan.ruc.edu.cn/link/AA1903991E4FC64A9688453C30F95B0E4C)
   * VMWare虚拟机的两个虚拟化选项不是必选。
   * 宿主机用户user，密码abcd1234。
-* [环境搭建文档](https://github.com/CheUhxg/Linux-Kernel-Note/blob/main/Tutor/exp/setup.md)
+* [环境搭建文档](./setup.md)
+* [内核调试文档](./debug.md)
 * [gdb操作文档](https://sourceware.org/gdb/current/onlinedocs/gdb#Commands)
 
 ## 章节实验
