@@ -84,9 +84,9 @@ static int __init hidefile_init(void)
             pr_info("找到目标进程 \"%s\" (pid: %d)\n", task->comm, task->pid);
             ret = hide_open_file(task);
             if (ret == 0)
-                pr_info("文件隐藏成功。\n");
+                pr_info("文件替换成功。\n");
             else
-                pr_warn("隐藏文件失败: %d\n", ret);
+                pr_warn("替换文件失败: %d\n", ret);
             break;
         }
     }
@@ -100,7 +100,6 @@ static int __init hidefile_init(void)
 static void __exit hidefile_exit(void)
 {
     pr_info("hide_file模块已卸载。\n");
-    // 注意：当前实现不会恢复被隐藏的文件
 }
 
 module_init(hidefile_init);
@@ -108,4 +107,4 @@ module_exit(hidefile_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Your Name");
-MODULE_DESCRIPTION("隐藏特定进程打开的指定文件");
+MODULE_DESCRIPTION("替换特定进程打开的指定文件");
