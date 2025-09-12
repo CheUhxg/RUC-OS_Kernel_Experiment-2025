@@ -25,7 +25,7 @@
 | ---------------- | ----------------------------- | ------------ |
 | 一、Linux 内核概述 | [DebugKernel](./debug.md)         | -            |
 | 二、进程管理与调度 | [ProcessShow](./ProcessShow) / [ScheduleObserver](./ScheduleObserver/)| [HideProcess](./RootKit/HideProcess) |
-| 三、系统调用       | 打印列表 / [AddSyscall](./AddSyscall/)| 劫持系统调用 |
+| 三、系统调用       | 打印列表 / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
 | 四、存储管理       | [MemoryStatus](./MemoryStatus/) / 修改 VMA 属性    | [HideVMA](./RootKit/HideVMA/)     |
 | 五、文件系统       | 查看 fs 状态 / 修改 proc 节点内容 | [RedirectFile](./RootKit/RedirectFile/) |
 | 六、进程间通信     | [BinderIPC](./BinderIPC/) / 修改 IPC 消息   | [SignalBlocker](./RootKit/SignalBlocker/) |
@@ -106,6 +106,12 @@
 * 添加一个内核模块，将指定进程从链表中摘除，使得ProcessShow无法检测到该进程。
 
 * [step-by-step](RootKit/HideProcess/README.md)
+
+### HookSyscall
+
+* 添加一个内核模块，hook系统调用setuid，使得恶意进程通过该系统调用提权。
+
+* [step-by-step](./RootKit/HookSyscall/README.md)
 
 ### HideVMA
 
