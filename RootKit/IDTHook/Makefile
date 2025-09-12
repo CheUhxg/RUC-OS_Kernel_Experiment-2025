@@ -7,7 +7,7 @@ CURRENT_PATH := $(shell pwd)
 LINUX_KERNEL_PATH := /home/user/Kernel/v6.6/x86_64/
 
 # 默认目标：同时构建内核模块和用户态程序
-all: idt_hook.ko malware
+all: idt_hook.ko
 
 # 编译内核模块
 idt_hook.ko: idt_hook.c

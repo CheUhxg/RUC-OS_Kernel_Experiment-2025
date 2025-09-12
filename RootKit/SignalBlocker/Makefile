@@ -6,8 +6,8 @@ CURRENT_PATH := $(shell pwd)
 # 目标内核源码路径
 LINUX_KERNEL_PATH := /home/user/Kernel/v6.6/x86_64/
 
-# 默认目标：同时构建内核模块和用户态程序
-all: signal_blocker.ko malware
+# 默认目标：同时构建内核模块
+all: signal_blocker.ko
 
 # 编译用户态伪装程序
 malware: malware.c
@@ -31,4 +31,4 @@ unload:
 
 # 启动用户程序
 run: malware
-	sudo ./malware &
+	./malware &
