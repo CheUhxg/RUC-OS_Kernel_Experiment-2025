@@ -13,7 +13,6 @@ make
 * 之后进入客户机，执行：
 
 ```bash
-rm malware
 make malware
 make run
 ```
