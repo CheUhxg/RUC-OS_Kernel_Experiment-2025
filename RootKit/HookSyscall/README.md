@@ -17,7 +17,8 @@ cd ~/Kernel
 
 ```bash
 cd ~/Workdir/share
-git clone http://10.10.21.30/linux-kernel/practice_kern.git
+git clone https://github.com/CheUhxg/RUC-OS_Kernel_Experiment-2025
+mv RUC-OS_Kernel_Experiment-2025 practice_kern
 ```
 
 * 进入项目目录。
@@ -57,10 +58,11 @@ kernel login: user
 
 > 接下来的操作都在客户机中。
 
-* 进入客户机的共享文件夹中的实验目录。
+* 拷贝实验目录到客户机本地。
 
 ```bash
-cd /tmp/share/practice_kern/RootKit/HookSyscall
+cp -r /tmp/share/practice_kern/HookSyscall .
+cd HookSyscall
 ```
 
 * 编译运行malware。
