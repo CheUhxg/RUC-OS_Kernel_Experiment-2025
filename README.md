@@ -16,7 +16,7 @@
 | ---------------- | ----------------------------- | ------------ |
 | 一、Linux 内核概述 | [DebugKernel](./debug.md)         | -            |
 | 二、进程管理与调度 | [ProcessShow](./ProcessShow) / [ScheduleObserver](./ScheduleObserver/)| [HideProcess](./RootKit/HideProcess) |
-| 三、系统调用       | 打印列表 / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
+| 三、系统调用       | [SyscallShow](./SyscallShow) / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
 | 四、存储管理       | [MemoryStatus](./MemoryStatus/) / 修改 VMA 属性    | [HideVMA](./RootKit/HideVMA/)     |
 | 五、文件系统       | 查看 fs 状态 / 修改 proc 节点内容 | [RedirectFile](./RootKit/RedirectFile/) |
 | 六、进程间通信     | [BinderIPC](./BinderIPC/) / 修改 IPC 消息   | [SignalBlocker](./RootKit/SignalBlocker/) |
@@ -34,6 +34,12 @@
 * 添加一个内核模块，加载模块时创建多个线程，线程中会让出CPU并记录被调用的次数，卸载模块时会打印每个线程被执行的次数。
 
 * [step-by-step](ScheduleObserver/README.md)
+
+### SyscallShow
+
+* 添加一个内核模块，加载模块时打印内核中所有系统调用。
+
+* [step-by-step](./SyscallShow//README.md)
 
 ### MemoryStatus
 
