@@ -22,7 +22,7 @@ mv RUC-OS_Kernel_Experiment-2025 practice_kern
 * 进入项目目录。
 
 ```bash
-cd practice_kern/S tu den t Li s t
+cd practice_kern/StudentList
 ```
 
 * 确认[Makefile](Makefile)中路径是否正确。
