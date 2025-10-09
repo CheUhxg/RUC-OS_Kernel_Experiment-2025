@@ -29,6 +29,10 @@
 
 * [step-by-step](ProcessShow/README.md)
 
+### ShowVruntime
+
+* 展示10s指定进程的vruntime。
+
 ### ScheduleObserver
 
 * 添加一个内核模块，加载模块时创建多个线程，线程中会让出CPU并记录被调用的次数，卸载模块时会打印每个线程被执行的次数。
