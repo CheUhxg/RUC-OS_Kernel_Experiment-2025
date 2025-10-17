@@ -1,53 +1,141 @@
-#include <linux/init.h>
+// SPDX-License-Identifier: GPL-2.0
 #include <linux/module.h>
+#include <linux/init.h>
 #include <linux/mm.h>
 #include <linux/mmzone.h>
-#include <linux/proc_fs.h>
-#include <linux/seq_file.h>
-#include <linux/swap.h>
-#include <linux/vmstat.h>
+#include <linux/mm_types.h>
+#include <linux/sched/mm.h>
+#include <linux/sched/signal.h>
+#include <linux/page_ref.h>
+#include <linux/gfp.h>
+#include <linux/memblock.h>
+#include <linux/highmem.h>
+#include <linux/kernel.h>
 #include <linux/sysinfo.h>
-#include <linux/sched/stat.h>
-#include <linux/sched/loadavg.h>
-#include <linux/time_namespace.h>
+#include <linux/nodemask.h>
+#include <linux/fs.h>
+#include <linux/pgtable.h>
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("YourName");
-MODULE_DESCRIPTION("Kernel module to get memory usage info");
+MODULE_AUTHOR("CheUhxg");
+MODULE_DESCRIPTION("Show memory statistics and process memory map");
+MODULE_VERSION("2.0");
 
-static int __init mem_stat_init(void)
+static int pid = -1;
+module_param(pid, int, 0644);
+MODULE_PARM_DESC(pid, "Target process PID");
+
+static void traverse_all_pages(void)
 {
-	unsigned long mem_total, sav_total;
-	unsigned int mem_unit, bitcount;
-	struct timespec64 tp;
-    struct sysinfo local_info;
-    struct sysinfo *info = &local_info;
+    unsigned long total_pages = 0;
+    unsigned long valid_pages = 0;
+    unsigned long free_pages = 0;
+    unsigned long anon_pages = 0;
+    unsigned long file_pages = 0;
+    unsigned long slab_pages = 0;
+    unsigned long dirty_pages = 0;
+    unsigned long writeback_pages = 0;
+    unsigned long lru_pages = 0;
+    int nid;
 
-	memset(info, 0, sizeof(struct sysinfo));
+    pr_info("[memory_status] ===== Page Frame Traversal =====\n");
 
-	ktime_get_boottime_ts64(&tp);
-	timens_add_boottime(&tp);
-	info->uptime = tp.tv_sec + (tp.tv_nsec ? 1 : 0);
+    for_each_online_node(nid) {
+        unsigned long start_pfn = node_start_pfn(nid);
+        unsigned long end_pfn   = node_end_pfn(nid);
+        unsigned long pfn;
 
-	si_meminfo(info);
+        for (pfn = start_pfn; pfn < end_pfn; pfn++) {
+            struct page *page;
 
-	// TODO: print info correctly
+            total_pages++;
 
-    pr_info("System uptime: %lu s\n", info->uptime);
-    pr_info("Total RAM: %lu kB\n", info->totalram / 1024);
-    pr_info("Free RAM: %lu kB\n", info->freeram / 1024);
-    pr_info("Shared RAM: %lu kB\n", info->sharedram / 1024);
-    pr_info("Buffer RAM: %lu kB\n", info->bufferram / 1024);
-    pr_info("Memory unit: %u\n", info->mem_unit);
-out:
+            if (!pfn_valid(pfn))
+                continue;
+
+            valid_pages++;
+            page = pfn_to_page(pfn);
+
+            /* TODO: classify page and update relevant counters */
+        }
+    }
+
+    pr_info("[memory_status] ===== Page Type Summary =====\n");
+    pr_info("[memory_status] total_pfn         = %lu\n", total_pages);
+    pr_info("[memory_status] valid_pfn         = %lu\n", valid_pages);
+    pr_info("[memory_status] free_pages        = %lu\n", free_pages);
+    pr_info("[memory_status] anon_pages        = %lu\n", anon_pages);
+    pr_info("[memory_status] file_pages        = %lu\n", file_pages);
+    pr_info("[memory_status] slab_pages        = %lu\n", slab_pages);
+    pr_info("[memory_status] dirty_pages       = %lu\n", dirty_pages);
+    pr_info("[memory_status] writeback_pages   = %lu\n", writeback_pages);
+    pr_info("[memory_status] lru_pages         = %lu\n", lru_pages);
+    pr_info("[memory_status] PAGE_SIZE         = %lu bytes\n", PAGE_SIZE);
+}
+
+static void show_vmas(struct mm_struct *mm)
+{
+    struct vm_area_struct *vma;
+    VMA_ITERATOR(vmi, mm, 0);
+
+    pr_info("[memory_status] ===== Traverse VMA (Maple Tree) =====\n");
+
+    /* TODO: iterate VMAs and print basic info */
+}
+
+static void traverse_page_table(struct mm_struct *mm)
+{
+    unsigned long addr;
+    unsigned long mapped_pages = 0;
+    const unsigned long end = mm->task_size;
+
+    pr_info("[memory_status] ===== Page Table Walk (partial) =====\n");
+
+    for (addr = 0; addr < end; addr += PAGE_SIZE) {
+        /* TODO: walk the page table and count mapped pages
+         * Reminder: use pte_offset_map() to access PTEs safely
+         */
+    }
+
+    pr_info("[memory_status] Mapped pages: %lu\n", mapped_pages);
+}
+
+static int __init memory_status_init(void)
+{
+    traverse_all_pages();
+
+    if (pid < 0) {
+        return 0;
+    }
+
+    struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
+    struct mm_struct *mm;
+
+    if (!task) {
+        pr_err("[memory_status] PID %d not found\n", pid);
+        return -ESRCH;
+    }
+
+    mm = get_task_mm(task);
+    if (!mm) {
+        pr_err("[memory_status] PID %d has no mm_struct (kernel thread?)\n", pid);
+        return -EINVAL;
+    }
+
+    pr_info("[memory_status] ===== Target process: %s (pid=%d) =====\n",
+            task->comm, pid);
+
+    show_vmas(mm);
+    traverse_page_table(mm);
+
+    mmput(mm);
     return 0;
 }
 
-static void __exit mem_stat_exit(void)
+static void __exit memory_status_exit(void)
 {
-    remove_proc_entry("mymem_stat", NULL);
-    pr_info("Memory info module unloaded\n");
+    pr_info("[memory_status] Module unloaded.\n");
 }
 
-module_init(mem_stat_init);
-module_exit(mem_stat_exit);
+module_init(memory_status_init);
+module_exit(memory_status_exit);

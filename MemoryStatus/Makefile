@@ -12,7 +12,10 @@ clean:
 	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
 
 load:
-	sudo insmod mem_stat.ko
+	sudo insmod mem_stat.ko pid=$(PID)
 
 unload:
 	sudo rmmod mem_stat
+
+target:
+	gcc ./target.c -o target
