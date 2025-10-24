@@ -17,7 +17,7 @@
 | 一、Linux 内核概述 | [DebugKernel](./debug.md)         | -            |
 | 二、进程管理与调度 | [ProcessShow](./ProcessShow) / [ScheduleObserver](./ScheduleObserver/)| [HideProcess](./RootKit/HideProcess) |
 | 三、系统调用       | [SyscallShow](./SyscallShow) / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
-| 四、存储管理       | [MemoryStatus](./MemoryStatus/) / 修改 VMA 属性    | [HideVMA](./RootKit/HideVMA/)     |
+| 四、存储管理       | [MemoryStatus](./MemoryStatus/) / [TraverseVMA](./TraverseVMA)   | [HideVMA](./RootKit/HideVMA/)     |
 | 五、文件系统       | 查看 fs 状态 / 修改 proc 节点内容 | [RedirectFile](./RootKit/RedirectFile/) |
 | 六、进程间通信     | [BinderIPC](./BinderIPC/) / 修改 IPC 消息   | [SignalBlocker](./RootKit/SignalBlocker/) |
 | 七、内核同步       | [RaceCondition](./RaceCondition/) / [VisitShared](./VisitShared/) | - |
@@ -53,7 +53,7 @@
 
 ### TraverseVMA
 
-* 添加一个内核模块，遍历所有进程的VMA。
+* 添加一个内核模块，翻转指定进程VMA的写位。
 
 * [step-by-step](./TraverseVMA//README.md)
 
