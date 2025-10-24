@@ -1,8 +1,16 @@
 #include <linux/module.h>
 #include <linux/init.h>
+#include <linux/moduleparam.h>
+#include <linux/types.h>
 #include <linux/sched/signal.h>
 #include <linux/mm.h>
 #include <linux/fs.h>
+#include <linux/mman.h>
+
+/* 模块参数：指定目标 PID（-1 表示所有进程） */
+static int pid = -1;
+module_param(pid, int, 0644);
+MODULE_PARM_DESC(pid, "Target PID (-1 for all processes)");
 
 // 初始化模块
 static int __init traverse_all_vma_init(void)
@@ -19,18 +27,38 @@ static int __init traverse_all_vma_init(void)
         if (!mm)
             continue;
 
+        // 若设置了 pid 参数，则仅处理该 PID
+        if (pid != -1 && task->pid != pid)
+            continue;
+
         pr_info("Process %d (%s):\n", task->pid, task->comm);
 
-        // 初始化 vma_iterator
+        // 加锁与迭代
+        mmap_write_lock(mm);
+
         vma_iter_init(&vmi, mm, 0);
 
-        // 获取 mm->mmap_lock 的读锁
-        mmap_read_lock(mm);
+        // 遍历所有 VMA，切换 VM_WRITE 位并打印差异
+        while ((vma = vma_next(&vmi)) != NULL) {
+            unsigned long old_flags = vma->vm_flags;
+            unsigned long new_flags; /* 仅用于打印/预期 */
 
-        // TODO: 使用 vma_next() 遍历所有 VMA
+            if (old_flags & (VM_IO | VM_PFNMAP))
+                continue;
+
+            if (old_flags & VM_SPECIAL)
+                continue;
+
+            // TODO: flip vma's WRITE flag
+
+            new_flags = vma->vm_flags; /* 实际修改后的值 */
+
+            pr_info("    flags before=0x%lx, after=0x%lx, diff=0x%lx\n",
+                    old_flags, new_flags, old_flags ^ new_flags);
+        }
 
         // 释放锁
-        mmap_read_unlock(mm);
+        mmap_write_unlock(mm);
     }
 
     return 0;

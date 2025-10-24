@@ -12,7 +12,10 @@ clean:
 	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
 
 load:
-	sudo insmod traverse_vma.ko
+	sudo insmod traverse_vma.ko pid=$(PID)
 
 unload:
 	sudo rmmod traverse_vma
+
+target:
+	gcc target.c -o target
