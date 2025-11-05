@@ -76,6 +76,18 @@
 
 * [step-by-step](./CreateProc/README.md)
 
+### StatPlus
+
+* 添加一个内核模块，打印指定进程的 fd（默认 3）对应文件的详细信息（路径、类型、权限、owner、size、inode、时间戳等）。
+
+* [step-by-step](./StatPlus/README.md)
+
+### ProcMirror
+
+* 添加一个内核模块，在 `/proc` 下创建 `proc_mirror` 目录，用符号链接映射目标进程已打开的文件（`fd-<N>` -> 文件路径）。
+
+* [step-by-step](./ProcMirror/README.md)
+
 ### IPCtest
 
 * 课堂演示：测试所有进程间通信方式的性能。
@@ -137,15 +149,3 @@
 * 添加一个内核模块，在内核中捕获发给malware的信号并记录。
 
 * [step-by-step](./RootKit/SignalBlocker/README.md)
-
-### StatPlus
-
-* 添加一个内核模块，打印指定进程的 fd（默认 3）对应文件的详细信息（路径、类型、权限、owner、size、inode、时间戳等）。
-
-* [step-by-step](./StatPlus/README.md)
-
-### ProcMirror
-
-* 添加一个内核模块，在 `/proc` 下创建 `proc_mirror` 目录，用符号链接映射目标进程已打开的文件（`fd-<N>` -> 文件路径）。
-
-* [step-by-step](./ProcMirror/README.md)
