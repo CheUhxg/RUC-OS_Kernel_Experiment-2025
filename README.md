@@ -18,7 +18,7 @@
 | 二、进程管理与调度 | [ProcessShow](./ProcessShow) / [ScheduleObserver](./ScheduleObserver/)| [HideProcess](./RootKit/HideProcess) |
 | 三、系统调用       | [SyscallShow](./SyscallShow) / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
 | 四、存储管理       | [MemoryStatus](./MemoryStatus/) / [TraverseVMA](./TraverseVMA)   | [HideVMA](./RootKit/HideVMA/)     |
-| 五、文件系统       | [StatPlus](./StatPlus/) / 修改 proc 节点内容 | [RedirectFile](./RootKit/RedirectFile/) |
+| 五、文件系统       | [StatPlus](./StatPlus/) / [ProcMirror](./ProcMirror/) | [RedirectFile](./RootKit/RedirectFile/) |
 | 六、进程间通信     | [BinderIPC](./BinderIPC/) / 修改 IPC 消息   | [SignalBlocker](./RootKit/SignalBlocker/) |
 | 七、内核同步       | [RaceCondition](./RaceCondition/) / [VisitShared](./VisitShared/) | - |
 | 八、中断机制       | 查看中断向量 / IRQ 使用情况     | [IDTHook](./RootKit/IDTHook/) |
@@ -143,3 +143,9 @@
 * 添加一个内核模块，打印指定进程的 fd（默认 3）对应文件的详细信息（路径、类型、权限、owner、size、inode、时间戳等）。
 
 * [step-by-step](./StatPlus/README.md)
+
+### ProcMirror
+
+* 添加一个内核模块，在 `/proc` 下创建 `proc_mirror` 目录，用符号链接映射目标进程已打开的文件（`fd-<N>` -> 文件路径）。
+
+* [step-by-step](./ProcMirror/README.md)
