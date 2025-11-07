@@ -7,7 +7,9 @@ TARGETS = pipe_anonymous \
           pipe_named_reader pipe_named_writer \
           shared_memory \
           msg_queue \
-          semaphore_sync
+		  semaphore_sync \
+		  socket_unix_stream \
+		  socket_unix_dgram
 
 all: $(TARGETS)
 
@@ -30,6 +32,12 @@ msg_queue: msg_queue.c
 semaphore_sync: semaphore_sync.c
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
+socket_unix_stream: socket_unix_stream.c
+	$(CC) $(CFLAGS) $^ -o $@
+
+socket_unix_dgram: socket_unix_dgram.c
+	$(CC) $(CFLAGS) $^ -o $@
+
 # 测试流程
 test: all
 	@echo "\n=== 开始测试 ==="
@@ -38,6 +46,8 @@ test: all
 	@$(MAKE) -s test_sharedmem
 	@$(MAKE) -s test_msgqueue
 	@$(MAKE) -s test_semaphore
+	@$(MAKE) -s test_socket_stream
+	@$(MAKE) -s test_socket_dgram
 	@echo "\n=== 测试完成 ==="
 
 test_pipe_anon: pipe_anonymous
@@ -72,6 +82,20 @@ test_msgqueue: msg_queue
 
 test_semaphore: semaphore_sync
 	@echo "\n[测试信号量]"
+	@for i in $$(seq 1 $(TEST_RUNS)); do \
+		echo ">> 第 $$i 次运行"; \
+		./$<; \
+	done
+
+test_socket_stream: socket_unix_stream
+	@echo "\n[测试 UNIX 域 SOCK_STREAM]"
+	@for i in $$(seq 1 $(TEST_RUNS)); do \
+		echo ">> 第 $$i 次运行"; \
+		./$<; \
+	done
+
+test_socket_dgram: socket_unix_dgram
+	@echo "\n[测试 UNIX 域 SOCK_DGRAM]"
 	@for i in $$(seq 1 $(TEST_RUNS)); do \
 		echo ">> 第 $$i 次运行"; \
 		./$<; \
