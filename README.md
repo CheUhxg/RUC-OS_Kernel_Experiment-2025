@@ -19,7 +19,7 @@
 | 三、系统调用       | [SyscallShow](./SyscallShow) / [AddSyscall](./AddSyscall/)| [HookSyscall](./RootKit/HookSyscall/) |
 | 四、存储管理       | [MemoryStatus](./MemoryStatus/) / [TraverseVMA](./TraverseVMA)   | [HideVMA](./RootKit/HideVMA/)     |
 | 五、文件系统       | [StatPlus](./StatPlus/) / [ProcMirror](./ProcMirror/) | [RedirectFile](./RootKit/RedirectFile/) |
-| 六、进程间通信     | [BinderIPC](./BinderIPC/) / 修改 IPC 消息   | [SignalBlocker](./RootKit/SignalBlocker/) |
+| 六、进程间通信     | [MutiIPC](./MutiIPC/) / [CheatIPC](./CheatIPC/)   | [SignalBlocker](./RootKit/SignalBlocker/) |
 | 七、内核同步       | [RaceCondition](./RaceCondition/) / [VisitShared](./VisitShared/) | - |
 | 八、中断机制       | 查看中断向量 / IRQ 使用情况     | [IDTHook](./RootKit/IDTHook/) |
 
@@ -99,6 +99,18 @@
 * 两个用户态程序（客户端和服务端），通过binder进行IPC。
 
 * [step-by-step](./BinderIPC/README.md)
+
+### MutiIPC
+
+* 一个最小化 Fuzz 练习框架，演示并练习多种 IPC 的协作。
+
+* [step-by-step](./MutiIPC/README.md)
+
+### CheatIPC
+
+* 添加一个内核模块，篡改消息队列中的消息内容使得程序行为改变。
+
+* [step-by-step](./CheatIPC/README.md)
 
 ### RaceCondition
 
