@@ -70,7 +70,7 @@ static int __init stat_plus_init(void)
 
     /* Gather and print information. NOTE: keep the block below unchanged. */
     {
-        char path_buf[PATH_MAX];
+        char path_buf[64];
         char *path = (char *)"(todo)";
         struct inode *inode = NULL;
         umode_t mode = 0;
