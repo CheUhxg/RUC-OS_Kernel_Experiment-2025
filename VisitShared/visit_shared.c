@@ -1,100 +1,93 @@
+// VisitShared: vulnerable race condition demo (no synchronization)
 #include <linux/module.h>
-#include <linux/interrupt.h>
-#include <linux/spinlock.h>
-#include <linux/workqueue.h>
-#include <linux/mm.h>
-#include <asm/ptrace.h>
-#include <linux/atomic.h>
+#include <linux/fs.h>
+#include <linux/cdev.h>
+#include <linux/uaccess.h>
+#include <linux/device.h>
+#include <linux/delay.h>
+#include <linux/ioctl.h>
 
-// /​**​​**​​**​​**​​**​​**​​**​​**​​**​ 共享变量与锁定义 ​**​​**​​**​​**​​**​​**​​**​​**​​**​/
-static atomic_t shared_var = ATOMIC_INIT(0);
+#define VS_DEV_NAME "visit_shared"
+#define VS_CLASS_NAME "visit_shared_cls"
 
-// 中断相关
-static int irq_number = 12;          // 键盘中断IRQ1
-static DEFINE_SPINLOCK(irq_lock);
+#define VS_MAGIC 0xA4
+#define VS_INC1 _IO(VS_MAGIC, 1)
+#define VS_INC2 _IO(VS_MAGIC, 2)
+#define VS_GET  _IOR(VS_MAGIC, 3, int)
 
-// 异常相关
-static DEFINE_SPINLOCK(exception_lock);
-static void (*orig_page_fault)(struct pt_regs *, unsigned long, unsigned long);
+static dev_t vs_devno;
+static struct cdev vs_cdev;
+static struct class *vs_class;
+static int shared_val = 0; // intentionally non-atomic
 
-// 工作队列相关
-static DEFINE_MUTEX(work_mutex);
-static struct delayed_work my_delayed_work;
-
-// 确保使用共享标志和正确的dev_id
-static struct my_dev_data {
-    char name[16];
-} dev_data = { .name = "my_mouse_irq" };
-
-// /​**​​**​​**​​**​​**​​**​​**​​**​​**​​**​ 中断处理部分 ​**​​**​​**​​**​​**​​**​​**​​**​​**​​**​/
-static irqreturn_t my_interrupt_handler(int irq, void *dev_id) {
-    unsigned long flags;
-    
-    spin_lock_irqsave(&irq_lock, flags);
-    atomic_add(5, &shared_var);
-    spin_unlock_irqrestore(&irq_lock, flags);
-    
-    printk(KERN_INFO "Interrupt! Shared var: %d\n", atomic_read(&shared_var));
-    return IRQ_HANDLED;
+static long vs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+    int tmp;
+    switch (cmd) {
+    case VS_INC1:
+        tmp = shared_val;
+        schedule();
+        shared_val = tmp + 1;
+        return 0;
+    case VS_INC2:
+        tmp = shared_val;
+        schedule();
+        shared_val = tmp + 2;
+        return 0;
+    case VS_GET:
+        if (copy_to_user((int __user *)arg, &shared_val, sizeof(shared_val)))
+            return -EFAULT;
+        return 0;
+    default:
+        return -ENOTTY;
+    }
 }
 
-static int __init irq_init(void) {
-    int ret = request_irq(irq_number, my_interrupt_handler, 
-                         IRQF_SHARED, "my_irq", &dev_data);
-    if (ret) 
-        printk(KERN_ERR "Failed to register IRQ %d\n", irq_number);
+static int vs_open(struct inode *inode, struct file *file) { return 0; }
+static int vs_release(struct inode *inode, struct file *file) { return 0; }
+
+static const struct file_operations vs_fops = {
+    .owner = THIS_MODULE,
+    .unlocked_ioctl = vs_ioctl,
+    .open = vs_open,
+    .release = vs_release,
+};
+
+static int __init vs_init(void)
+{
+    int ret = alloc_chrdev_region(&vs_devno, 0, 1, VS_DEV_NAME);
+    if (ret) return ret;
+    cdev_init(&vs_cdev, &vs_fops);
+    vs_cdev.owner = THIS_MODULE;
+    ret = cdev_add(&vs_cdev, vs_devno, 1);
+    if (ret) goto err_unregister;
+    vs_class = class_create(VS_CLASS_NAME);
+    if (IS_ERR(vs_class)) {
+        ret = PTR_ERR(vs_class);
+        goto err_cdev;
+    }
+    device_create(vs_class, NULL, vs_devno, NULL, VS_DEV_NAME);
+    pr_info("visit_shared: loaded without locking\n");
+    shared_val = 0;
+    return 0;
+err_cdev:
+    cdev_del(&vs_cdev);
+err_unregister:
+    unregister_chrdev_region(vs_devno, 1);
     return ret;
 }
 
-static void __exit irq_cleanup(void) {
-    free_irq(irq_number, NULL);
+static void __exit vs_exit(void)
+{
+    device_destroy(vs_class, vs_devno);
+    class_destroy(vs_class);
+    cdev_del(&vs_cdev);
+    unregister_chrdev_region(vs_devno, 1);
+    pr_info("visit_shared: unloaded\n");
 }
 
-// /​**​​**​​**​​**​​**​​**​​**​​**​​**​ 可延迟函数部分 ​**​​**​​**​​**​​**​​**​​**​​**​​**​​**​/
-static void deferred_work_handler(struct work_struct *work) {
-    mutex_lock(&work_mutex);
-    atomic_set(&shared_var, 100);
-    mutex_unlock(&work_mutex);
-    printk(KERN_INFO "Deferred work done! Shared var: %d\n", 
-          atomic_read(&shared_var));
-}
+module_init(vs_init);
+module_exit(vs_exit);
 
-static int __init myworkqueue_init(void) {
-    INIT_DELAYED_WORK(&my_delayed_work, deferred_work_handler);
-    schedule_delayed_work(&my_delayed_work, HZ * 2);
-    return 0;
-}
-
-static void __exit workqueue_cleanup(void) {
-    cancel_delayed_work_sync(&my_delayed_work);
-}
-
-// /​**​​**​​**​​**​​**​​**​​**​​**​​**​ 模块主函数 ​**​​**​​**​​**​​**​​**​​**​​**​​**​​**​​**​/
-static int __init main_init(void) {
-    atomic_set(&shared_var, 0);
-    
-    if (irq_init() != 0) {
-        printk(KERN_ERR "IRQ init failed\n");
-        return -EIO;
-    }
-    
-    // TODO: hook_page_fault();
-    myworkqueue_init();
-    
-    printk(KERN_INFO "Module loaded. Shared var: %d\n", 
-          atomic_read(&shared_var));
-    return 0;
-}
-
-static void __exit main_exit(void) {
-    irq_cleanup();
-    // TODO: unhook_page_fault();
-    workqueue_cleanup();
-    printk(KERN_INFO "Module unloaded. Final value: %d\n", 
-          atomic_read(&shared_var));
-}
-
-module_init(main_init);
-module_exit(main_exit);
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Your Name");
+MODULE_DESCRIPTION("VisitShared race condition demo (inc1/inc2/get) without synchronization");

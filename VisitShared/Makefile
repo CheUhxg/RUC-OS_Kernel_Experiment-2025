@@ -1,18 +1,33 @@
 obj-m += visit_shared.o
 
-# 当前模块的路径
-CURRENT_PATH := $(shell pwd)
+TEST_PROG = test
+CC = gcc
+CFLAGS = -Wall -O2 -pthread  # 使用线程演示竞态需要 -pthread
 
-# 目标内核的根目录（确认是否存在对应目录）
+# 内核构建路径（根据实际情况修改）
 LINUX_KERNEL_PATH := /home/user/Kernel/v6.6/x86_64/
 
-all:
-	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) modules
+# 当前工作目录
+CURRENT_PATH := $(shell pwd)
+
+all: module
+
+module:
+	@echo "Building kernel module..."
+	@make -s -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) modules
+
+$(TEST_PROG): test.c
+	@echo "Building userspace test program (race demo)..."
+	@$(CC) $(CFLAGS) -o $@ $^
+
 clean:
-	make -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
+	@make -s -C $(LINUX_KERNEL_PATH) M=$(CURRENT_PATH) clean
+	@rm -f $(TEST_PROG)
 
 load:
-	sudo insmod visit_shared.ko
+	@sudo insmod visit_shared.ko
 
 unload:
-	sudo rmmod visit_shared
+	@sudo rmmod visit_shared
+
+.PHONY: all module clean load unload run
