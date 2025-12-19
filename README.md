@@ -21,7 +21,8 @@
 | 五、文件系统       | [StatPlus](./StatPlus/) / [ProcMirror](./ProcMirror/) | [RedirectFile](./RootKit/RedirectFile/) |
 | 六、进程间通信     | [MutiIPC](./MutiIPC/) / [CheatIPC](./CheatIPC/)   | [SignalBlocker](./RootKit/SignalBlocker/) |
 | 七、内核同步       | [RaceCondition](./RaceCondition/) / [VisitShared](./VisitShared/) | - |
-| 八、中断机制       | 查看中断向量 / IRQ 使用情况     | [IDTHook](./RootKit/IDTHook/) |
+| 八、中断机制       | - / -     | [IDTHook](./RootKit/IDTHook/) |
+|安全|[codeql](./Security/codeql/) / [syzkaller]()| - |
 
 ### ProcessShow
 
@@ -161,3 +162,11 @@
 * 添加一个内核模块，在内核中捕获发给malware的信号并记录。
 
 * [step-by-step](./RootKit/SignalBlocker/README.md)
+
+## Security
+
+### codeql
+
+* 使用CodeQL检测在内核中预埋的漏洞。
+
+* [step-by-step](./Security/codeql/README.md)
