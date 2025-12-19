@@ -22,7 +22,7 @@
 | 六、进程间通信     | [MutiIPC](./MutiIPC/) / [CheatIPC](./CheatIPC/)   | [SignalBlocker](./RootKit/SignalBlocker/) |
 | 七、内核同步       | [RaceCondition](./RaceCondition/) / [VisitShared](./VisitShared/) | - |
 | 八、中断机制       | - / -     | [IDTHook](./RootKit/IDTHook/) |
-|安全|[codeql](./Security/codeql/) / [syzkaller]()| - |
+|安全|[codeql](./Security/codeql/) / [syzkaller](./Security/syzkaller/)| - |
 
 ### ProcessShow
 
@@ -170,3 +170,9 @@
 * 使用CodeQL检测在内核中预埋的漏洞。
 
 * [step-by-step](./Security/codeql/README.md)
+
+### syzkaller
+
+* 使用Syzkaller模糊厕所在内核中预埋的漏洞。
+
+* [step-by-step](./Security/syzkaller/README.md)
